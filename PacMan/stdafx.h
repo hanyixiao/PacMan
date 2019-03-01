@@ -19,3 +19,7 @@
 
 
 // 在此处引用程序需要的其他标头
+#include <memory>
+#include <vector>
+#include <algorithm>
+#include <functional>
