@@ -3,11 +3,14 @@
 
 #include "stdafx.h"
 #include "PacMan.h"
+#include "GMap.h"
 
 #define MAX_LOADSTRING 100
 //定义窗口大小
 #define WLENTH 700
 #define WHIGHT 740
+//定义游戏关卡数
+#define STAGE_COUNT 3 
 //保存游戏窗口句柄
 static HWND g_hWnd;
 // 全局变量:
@@ -43,138 +46,148 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PACMAN));
+	//当前的关卡
+	int s_n = 1; //[0,1,2]
+	//地图
+	GMap *MapArray[STAGE_COUNT] = { new Stage_1(),new Stage_2(),new Stage_3() };
 
     MSG msg;
 
     // 主消息循环:
 	bool bRunning = true;
-	while (bRunning) {
+	while (bRunning && s_n< STAGE_COUNT) {
 		//获取消息
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) {
+			if (msg.message == WM_QUIT) {   //MW_QIUT消息 直接退出
 				break;
 			}
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			TranslateMessage(&msg);         //翻译消息
+			DispatchMessage(&msg);          //传递消息
 		}
+		HDC hdc = ::GetDC(g_hWnd);
+		{
+			MapArray[s_n]->DrawPeas(hdc);
+			MapArray[s_n]->DrawMap(hdc);
+		}
+		::ReleaseDC(g_hWnd, hdc);
 	//	画线段测试
-			{
-				static DWORD dwTime = GetTickCount();
-				if (GetTickCount() - dwTime >= 50) {
-					dwTime = GetTickCount();
-				}
-				else {
-					continue;
-				}
-				/*
-				模拟当前帧，
-				本对象一共5帧，每一帧绘制不同的图像
-				*/
-				static int iFrame = 0;
-				++iFrame;
-				if (iFrame >= 5) {
-					iFrame = 0;
-				}
-				//代表对象的中心位置
-				int x = 300, y = 300;
-				//对象的半径
-				int r = 100;
-
-				//dc 对象电放费句柄
-				HDC hdc = ::GetDC(g_hWnd);
-				std::shared_ptr<HDC__> dc(::GetDC(g_hWnd), [](HDC hdc)
-				{
-					::ReleaseDC(g_hWnd, hdc);
-				});
-				//获取窗口客户区大小
-				RECT rc;
-				GetClientRect(g_hWnd, &rc);
-
-				//创建画刷
-				std::shared_ptr<HBRUSH__>br(
-					::CreateSolidBrush(RGB(255, 255, 255)), [](HBRUSH hbr){
-					::DeleteObject(hbr);
-				});
-
-				//画背景
-				FillRect(dc.get(), &rc, br.get());
-#define PI (3.1415926f)
-				switch (iFrame) {
-					case 0: {
-						Ellipse(dc.get(), x - r, y - r, x + r, y + r);//画一个圆
-						MoveToEx(dc.get(), x - r, y, NULL);
-						LineTo(dc.get(), x, y);
-						break;
-					}
-					case 1: {
-						//画嘴
-						int x0, y0;
-						int x1, y1;
-						x0 = x - static_cast<int>(r*sin(PI*0.75f));
-						y0 = y + static_cast<int>(r*cos(PI*0.75f));
-
-						x1 = x + static_cast<int>(r*sin(PI*1.25f));
-						y1 = y - static_cast<int>(r*cos(PI*1.25f));
-
-						SetPixel(dc.get(), x0, y0, RGB(255, 0, 0));
-						SetPixel(dc.get(), x1, y1, RGB(0, 255, 0));
-						SetPixel(dc.get(), x, y, RGB(0, 0, 0));
-
-						Arc(dc.get(), x - r, y - r, x + r, y + r,
-							x1, y1, x0, y0);
-
-						MoveToEx(dc.get(), x0, y0, NULL);
-						LineTo(dc.get(), x, y);
-
-						MoveToEx(dc.get(), x1, y1, NULL);
-						LineTo(dc.get(), x, y);
-						break;
-					}
-					case 2: {
-						Arc(dc.get(), x - r, y - r, x + r, y + r,
-							x, y + r,
-							x, y - r);
-						//画竖线
-						MoveToEx(dc.get(), x, y - r, NULL);
-						LineTo(dc.get(), x, y + r);
-						break;
-					}
-					case 3: {
-						//画嘴
-						int x0, y0;
-						int x1, y1;
-						x0 = x - static_cast<int>(r*sin(PI*0.75f));
-						y0 = y + static_cast<int>(r*cos(PI*0.75f));
-
-						x1 = x + static_cast<int>(r*sin(PI*1.25f));
-						y1 = y - static_cast<int>(r*cos(PI*1.25f));
-
-						SetPixel(dc.get(), x0, y0, RGB(255, 0, 0));
-						SetPixel(dc.get(), x1, y1, RGB(0, 255, 0));
-						SetPixel(dc.get(), x, y, RGB(0, 0, 0));
-						//画一个半圆加一张嘴
-						Arc(dc.get(), x - r, y - r, x + r, y + r,
-							x1, y1, x0, y0);
-
-						MoveToEx(dc.get(), x0, y0, NULL);
-						LineTo(dc.get(), x, y);
-
-						MoveToEx(dc.get(), x1, y1, NULL);
-						LineTo(dc.get(), x, y);
-						break;
-					}
-					case 4: {
-						//画一个圆
-						Ellipse(dc.get(), x - r, y - r, x + r, y + r);
-						//画一条横线
-						MoveToEx(dc.get(), x - r, y, NULL);
-						LineTo(dc.get(), x, y);
-						break;
-					}
-					default:
-						break;
-				}
-			}
+//			{
+//				static DWORD dwTime = GetTickCount();
+//				if (GetTickCount() - dwTime >= 50) {
+//					dwTime = GetTickCount();
+//				}
+//				else {
+//					continue;
+//				}
+//				/*
+//				模拟当前帧，
+//				本对象一共5帧，每一帧绘制不同的图像
+//				*/
+//				static int iFrame = 0;
+//				++iFrame;
+//				if (iFrame >= 5) {
+//					iFrame = 0;
+//				}
+//				//代表对象的中心位置
+//				int x = 300, y = 300;
+//				//对象的半径
+//				int r = 100;
+//
+//				//dc 对象电放费句柄
+//				HDC hdc = ::GetDC(g_hWnd);
+//				std::shared_ptr<HDC__> dc(::GetDC(g_hWnd), [](HDC hdc)
+//				{
+//					::ReleaseDC(g_hWnd, hdc);
+//				});
+//				//获取窗口客户区大小
+//				RECT rc;
+//				GetClientRect(g_hWnd, &rc);
+//
+//				//创建画刷
+//				std::shared_ptr<HBRUSH__>br(
+//					::CreateSolidBrush(RGB(255, 255, 255)), [](HBRUSH hbr){
+//					::DeleteObject(hbr);
+//				});
+//
+//				//画背景
+//				FillRect(dc.get(), &rc, br.get());
+//#define PI (3.1415926f)
+//				switch (iFrame) {
+//					case 0: {
+//						Ellipse(dc.get(), x - r, y - r, x + r, y + r);//画一个圆
+//						MoveToEx(dc.get(), x - r, y, NULL);
+//						LineTo(dc.get(), x, y);
+//						break;
+//					}
+//					case 1: {
+//						//画嘴
+//						int x0, y0;
+//						int x1, y1;
+//						x0 = x - static_cast<int>(r*sin(PI*0.75f));
+//						y0 = y + static_cast<int>(r*cos(PI*0.75f));
+//
+//						x1 = x + static_cast<int>(r*sin(PI*1.25f));
+//						y1 = y - static_cast<int>(r*cos(PI*1.25f));
+//
+//						SetPixel(dc.get(), x0, y0, RGB(255, 0, 0));
+//						SetPixel(dc.get(), x1, y1, RGB(0, 255, 0));
+//						SetPixel(dc.get(), x, y, RGB(0, 0, 0));
+//
+//						Arc(dc.get(), x - r, y - r, x + r, y + r,
+//							x1, y1, x0, y0);
+//
+//						MoveToEx(dc.get(), x0, y0, NULL);
+//						LineTo(dc.get(), x, y);
+//
+//						MoveToEx(dc.get(), x1, y1, NULL);
+//						LineTo(dc.get(), x, y);
+//						break;
+//					}
+//					case 2: {
+//						Arc(dc.get(), x - r, y - r, x + r, y + r,
+//							x, y + r,
+//							x, y - r);
+//						//画竖线
+//						MoveToEx(dc.get(), x, y - r, NULL);
+//						LineTo(dc.get(), x, y + r);
+//						break;
+//					}
+//					case 3: {
+//						//画嘴
+//						int x0, y0;
+//						int x1, y1;
+//						x0 = x - static_cast<int>(r*sin(PI*0.75f));
+//						y0 = y + static_cast<int>(r*cos(PI*0.75f));
+//
+//						x1 = x + static_cast<int>(r*sin(PI*1.25f));
+//						y1 = y - static_cast<int>(r*cos(PI*1.25f));
+//
+//						SetPixel(dc.get(), x0, y0, RGB(255, 0, 0));
+//						SetPixel(dc.get(), x1, y1, RGB(0, 255, 0));
+//						SetPixel(dc.get(), x, y, RGB(0, 0, 0));
+//						//画一个半圆加一张嘴
+//						Arc(dc.get(), x - r, y - r, x + r, y + r,
+//							x1, y1, x0, y0);
+//
+//						MoveToEx(dc.get(), x0, y0, NULL);
+//						LineTo(dc.get(), x, y);
+//
+//						MoveToEx(dc.get(), x1, y1, NULL);
+//						LineTo(dc.get(), x, y);
+//						break;
+//					}
+//					case 4: {
+//						//画一个圆
+//						Ellipse(dc.get(), x - r, y - r, x + r, y + r);
+//						//画一条横线
+//						MoveToEx(dc.get(), x - r, y, NULL);
+//						LineTo(dc.get(), x, y);
+//						break;
+//					}
+//					default:
+//						break;
+//				}
+//			}
 	}
 
     return (int) msg.wParam;
