@@ -92,7 +92,7 @@ public:
 class RedOne :public Enermy  //Ëæ¼´ÒÆ¶¯S
 {
 protected:
-	void virtual MakeDecison(bool b);
+	void virtual MakeDecision(bool b);
 public:
 	void Draw(HDC &hdc);
 	RedOne(int x, int y) :Enermy(x, y)
@@ -104,7 +104,7 @@ public:
 class BlueOne :public Enermy  //Ëæ¼´ÒÆ¶¯S
 {
 protected:
-	void virtual MakeDecison(bool b);
+	void virtual MakeDecision(bool b);
 public:
 	void Draw(HDC &hdc);
 	BlueOne(int x, int y) :Enermy(x, y)
@@ -116,7 +116,7 @@ public:
 class YellowOne :public Enermy  //Ëæ¼´ÒÆ¶¯S
 {
 protected:
-	void virtual MakeDecison(bool b);
+	void virtual MakeDecision(bool b);
 public:
 	void Draw(HDC &hdc);
 	YellowOne(int x, int y) :Enermy(x, y)

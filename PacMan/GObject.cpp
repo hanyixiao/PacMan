@@ -302,7 +302,7 @@ void Enermy::Draw(HDC &hdc)
 			m_ptCenter.y + DISTANCE - LEGLENTH);
 		MoveToEx(hdc, m_ptCenter.x + DISTANCE, m_ptCenter.y, NULL);
 		LineTo(hdc, m_ptCenter.x + DISTANCE, m_ptCenter.y + DISTANCE - LEGLENTH);
-		for (int i = 0; i < LEGCOUNT; i++) {
+		for (int i = 0; i < LEGCOUNT; i++) {    //从左到右绘制腿部
 			Arc(hdc,
 				m_ptCenter.x - DISTANCE + i * 2 * LEGLENTH,
 				m_ptCenter.y + DISTANCE - 2 * LEGLENTH,
@@ -316,8 +316,121 @@ void Enermy::Draw(HDC &hdc)
 
 		}
 	}
+	else {
+		MoveToEx(hdc, m_ptCenter.x - DISTANCE, m_ptCenter.y, NULL);//绘制身体
+		LineTo(hdc, m_ptCenter.x - DISTANCE, m_ptCenter.y + DISTANCE);
+		MoveToEx(hdc, m_ptCenter.x + DISTANCE, m_ptCenter.y, NULL);
+		LineTo(hdc, m_ptCenter.x + DISTANCE, m_ptCenter.y + DISTANCE);
 
+		MoveToEx(hdc, m_ptCenter.x - DISTANCE,
+			m_ptCenter.y + DISTANCE, NULL);
+		LineTo(hdc, m_ptCenter.x - DISTANCE + LEGLENTH,
+			m_ptCenter.y + DISTANCE - LEGLENTH);
+
+		for (int i = 0; i < LEGCOUNT - 1; i++) {
+			Arc(hdc, m_ptCenter.x - DISTANCE + (1 + i * 2)*LEGLENTH,
+				m_ptCenter.y + DISTANCE - 2 * LEGLENTH,
+				m_ptCenter.x - DISTANCE + (3 + i * 2)*LEGLENTH,
+				m_ptCenter.y + DISTANCE,
+				m_ptCenter.x - DISTANCE + (1 + i * 2)*LEGLENTH,
+				m_ptCenter.y + DISTANCE - LEGLENTH,
+				m_ptCenter.x - DISTANCE + (3 + i * 2)*LEGLENTH,
+				m_ptCenter.y + DISTANCE - LEGLENTH);
+		}
+		MoveToEx(hdc, m_ptCenter.x + DISTANCE,
+			m_ptCenter.y + DISTANCE, NULL);
+		LineTo(hdc, m_ptCenter.x + DISTANCE,
+			m_ptCenter.y + DISTANCE - LEGLENTH);
+	}
+		//根据方向绘制眼睛
+		int R = DISTANCE / 5;
+		switch (m_dir) {
+			case UP:
+				Ellipse(hdc, m_ptCenter.x - 2 * R, m_ptCenter.y - 2 * R,
+					m_ptCenter.x, m_ptCenter.y);         //画左眼
+				Ellipse(hdc, m_ptCenter.x, m_ptCenter.y - 2 * R,
+					m_ptCenter.x + 2 * R, m_ptCenter.y); //画右眼
+				break;
+			case DOWN:
+				Ellipse(hdc, m_ptCenter.x - 2 * R, m_ptCenter.y,
+					m_ptCenter.x, m_ptCenter.y + 2 * R);
+				Ellipse(hdc, m_ptCenter.x, m_ptCenter.y,
+					m_ptCenter.x + 2 * R, m_ptCenter + 2 * R);
+				break;
+			case LEFT:
+				Ellipse(hdc, m_ptCenter.x - 3 * R, m_ptCenter.y - R,
+					m_ptCenter.x-R, m_ptCenter.y+R);
+				Ellipse(hdc, m_ptCenter.x - R, m_ptCenter.y - R,
+					m_ptCenter.x + R, m_ptCenter.y + R);
+				break;
+			case RIGHT:
+				Ellipse(hdc, m_ptCenter.x - R, m_ptCenter.y - R,
+					m_ptCenter.y + R, m_ptCenter.y + R);
+				Ellipse(hdc, m_ptCenter.x + R, m_ptCenter.y - R,
+					m_ptCenter.x + 3 * R, m_ptCenter.y + R);
+				break;
+		}
+	m_nFrame++;
+	SelectObject(hdc, oldPen);
+	DeleteObject(pen);
+	return;
 }
+void Enermy::action()
+{
+	bool b = Collision();//判读是否发生碰撞
+	MakeDecision(b);
+	Catch();             //开始抓捕
+}
+//第二节
+//红色敌军对象成员定义代码
+void RedOne::Draw(HDC &hdc)
+{
+	Enermy::Draw(hdc);
+}
+void RedOne::MakeDecision(bool b)
+{
+	int i = rand();
+	if (b) {                                          //撞到墙壁，改变方向
+		if (i % 4 == 0) {                             //逆时针旋转方向
+			m_dir == UP ? m_cmd = LEFT : m_cmd = UP;  //面向上，向左拐弯
+		}
+		else if (i % 3 == 0) {
+			m_dir == DOWN ? m_cmd = RIGHT : m_cmd = DOWN; //面向下 向右拐
+		}
+		else if (i % 2 == 0) {
+			m_dir == RIGHT ? m_cmd = UP : m_cmd = RIGHT; //
+		}
+		else {
+			m_dir == LEFT ? m_cmd = DOWN : m_cmd = LEFT;
+		}
+		return;
+	}
+	//程序运行到这里说明没有撞墙继续处理
+	if (i % 4 == 0) {                             //逆时针旋转方向
+		m_dir == UP ? m_cmd = DOWN : m_cmd = UP;  //面向上，向左拐弯
+	}
+	else if (i % 3 == 0) {
+		m_dir == DOWN ? m_cmd = UP : m_cmd = DOWN; //面向下 向右拐
+	}
+	else if (i % 2 == 0) {
+		m_dir == RIGHT ? m_cmd = LEFT : m_cmd = RIGHT; //
+	}
+	else {
+		m_dir == LEFT ? m_cmd = RIGHT : m_cmd = LEFT;
+	}
+	return;
+}
+//蓝色敌军对象的 定义
+//该函数会判断玩家是否会进入其有效警戒范围，如果在范围内，则设定移动方向并进行追击
+void BlueOne::Draw(HDC &hdc)
+{
+	Enermy::Draw(hdc);
+}
+void BlueOne::MakeDecision(bool b)
+{
+	const int DR = this->m_nRow - player->GetRow();
+}
+
 GObject::~GObject()
 {
 }
