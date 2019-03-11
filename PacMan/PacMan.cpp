@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "PacMan.h"
 #include "GMap.h"
+#include "GObject.h"
 
 #define MAX_LOADSTRING 100
 //定义窗口大小
@@ -50,26 +51,81 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	int s_n = 1; //[0,1,2]
 	//地图
 	GMap *MapArray[STAGE_COUNT] = { new Stage_1(),new Stage_2(),new Stage_3() };
+	//自己
+	auto g_me = std::make_shared<PacMan>(P_ROW,P_ARRAY);
+	//设定4个敌人对象
+	auto e1 = std::make_shared<RedOne>(E_ROW, E_ARRAY);
+	auto e2 = std::make_shared<RedOne>(E_ROW, E_ARRAY);
+	auto e3 = std::make_shared<BlueOne>(E_ROW, E_ARRAY);
+	auto e4 = std::make_shared<YellowOne>(E_ROW, E_ARRAY);
+
+	//关卡
+	GObject::pStage = MapArray[s_n];
+
+	//设定玩家
+	Enermy::player = g_me;                   //用一个指针对象指向玩家
 
     MSG msg;
 
-    // 主消息循环:
-	bool bRunning = true;
-	while (bRunning && s_n< STAGE_COUNT) {
-		//获取消息
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) {   //MW_QIUT消息 直接退出
+	DWORD dwLastTime = 0;
+	//主消息循环
+	while (!g_me->IsOver() && s_n < STAGE_COUNT) {
+		//判断是否赢得比赛
+		if (g_me->IsWin()) {
+			s_n++;
+			//重设玩家和敌军的位置
+			g_me->SetPosition(P_ROW,P_ARRAY);
+			e1->SetPosition(E_ROW, E_ARRAY);
+			e2->SetPosition(E_ROW, E_ARRAY);
+			e3->SetPosition(E_ROW, E_ARRAY);
+			e4->SetPosition(E_ROW, E_ARRAY);
+			//判断是否完成了3关卡
+			if (s_n < 3) {
+				MessageBox(g_hWnd, TEXT("恭喜过关"), TEXT("吃豆子提示"), MB_OK);
+				GObject::pStage = MapArray[s_n];
+				RECT screenRect;
+				screenRect.top = 0;
+				screenRect.bottom = 0;
+				screenRect.left = WLENTH;
+				screenRect.right = WHIGHT;
+
+				HDC hdc = ::GetDC(g_hWnd);
+				std::shared_ptr<HDC__ >dc(hdc, [](HDC hdc) {
+					::ReleaseDC(g_hWnd, hdc);
+				});
+				::FillRect(dc.get(), &screenRect, CreateSolidBrush(
+					RGB(255, 255, 255)));
+				GObject::pStage->DrawMap(hdc);
+				continue;
+			}
+			else {
+				//调出循环
 				break;
 			}
-			TranslateMessage(&msg);         //翻译消息
-			DispatchMessage(&msg);          //传递消息
+		}
+		//获取消息
+		if (PeekMessage(&msg, g_hWnd, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		//判断时间
+		if (GetTickCount() - dwLastTime >= 40)
+		{
+			dwLastTime = GetTickCount();
+		}
+		else {
+			continue;
 		}
 		HDC hdc = ::GetDC(g_hWnd);
+		std::shared_ptr<HDC__ >dc(hdc, [](auto hdc) {
+			::ReleaseDC(g_hWnd, hdc);
+		});
+		MapArray[s_n]->DrawPeas(hdc);
+		MapArray[s_n]->DrawMap(hdc);
+		//画敌人及运动
 		{
-			MapArray[s_n]->DrawPeas(hdc);
-			MapArray[s_n]->DrawMap(hdc);
+
 		}
-		::ReleaseDC(g_hWnd, hdc);
 	}
 
     return (int) msg.wParam;

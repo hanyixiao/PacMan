@@ -38,7 +38,7 @@ void GObject::DrawBlank(HDC &hdc)
 	//申请资源，并交给智能指针进行处理
 	HBRUSH hbr = ::CreateSolidBrush(RGB(255, 255, 255));
 	std::shared_ptr<HBRUSH> phbr(&hbr, [](auto hbr) {   //交给智能指针处理，自动释放资源
-		DeleteObject( *hbr);                    //离开DrawBlank函数时，自动调用释放资源
+		DeleteObject(hbr);                    //离开DrawBlank函数时，自动调用释放资源
 	});
 	RECT rect;
 	rect.top = m_nY - RD;
