@@ -101,25 +101,25 @@ public:
 	}
 
 };
-class BlueOne :public Enermy  //Ëæ¼´ÒÆ¶¯S
+class BlueOne :public RedOne  //Ëæ¼´ÒÆ¶¯S
 {
 protected:
 	void virtual MakeDecision(bool b);
 public:
 	void Draw(HDC &hdc);
-	BlueOne(int x, int y) :Enermy(x, y)
+	BlueOne(int x, int y) :RedOne(x, y)
 	{
 		color = RGB(0, 0, 255);
 	}
 
 };
-class YellowOne :public Enermy  //Ëæ¼´ÒÆ¶¯S
+class YellowOne :public  RedOne //Ëæ¼´ÒÆ¶¯S
 {
 protected:
 	void virtual MakeDecision(bool b);
 public:
 	void Draw(HDC &hdc);
-	YellowOne(int x, int y) :Enermy(x, y)
+	YellowOne(int x, int y) :RedOne(x, y)
 	{
 		color = RGB(200, 200, 100);
 	}

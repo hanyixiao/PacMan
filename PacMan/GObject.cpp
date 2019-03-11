@@ -38,7 +38,7 @@ void GObject::DrawBlank(HDC &hdc)
 	//申请资源，并交给智能指针进行处理
 	HBRUSH hbr = ::CreateSolidBrush(RGB(255, 255, 255));
 	std::shared_ptr<HBRUSH> phbr(&hbr, [](auto hbr) {   //交给智能指针处理，自动释放资源
-		DeleteObject(*hbr);                    //离开DrawBlank函数时，自动调用释放资源
+		DeleteObject( *hbr);                    //离开DrawBlank函数时，自动调用释放资源
 	});
 	RECT rect;
 	rect.top = m_nY - RD;
@@ -200,7 +200,7 @@ void PacMan::Draw(HDC &memDC)
 		//游戏结束什么也不用肝了
 	}
 	else if (m_nFrame % 2 == 0) {   //第四帧图像与第二帧图像相同：张嘴
-		int x1 = 0, int x2 = 0, y1 = 0, y2 = 0;
+		int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 		int offsetX = DISTANCE / 2 + D_OFFSET;
 		int offsetY = DISTANCE / 2 + D_OFFSET;
 		switch (m_dir) {
@@ -355,7 +355,7 @@ void Enermy::Draw(HDC &hdc)
 				Ellipse(hdc, m_ptCenter.x - 2 * R, m_ptCenter.y,
 					m_ptCenter.x, m_ptCenter.y + 2 * R);
 				Ellipse(hdc, m_ptCenter.x, m_ptCenter.y,
-					m_ptCenter.x + 2 * R, m_ptCenter + 2 * R);
+					m_ptCenter.x + 2 * R, m_ptCenter.y + 2 * R);
 				break;
 			case LEFT:
 				Ellipse(hdc, m_ptCenter.x - 3 * R, m_ptCenter.y - R,
@@ -429,8 +429,62 @@ void BlueOne::Draw(HDC &hdc)
 void BlueOne::MakeDecision(bool b)
 {
 	const int DR = this->m_nRow - player->GetRow();
+	const int DA = this->m_nArray - player->GetArray();
+	if (!b && DR == 0) {    
+		if (DA <= BLUE_ALERT && DA > 0) {    //玩家在左侧警戒位置
+			m_cmd = LEFT;
+			return;
+		}
+		if (DA < 0 && DA >= -BLUE_ALERT) {
+			m_cmd = RIGHT;
+			return;
+		}
+	}
+	if (!b && DA == 0) {
+		if (DR <= BLUE_ALERT && DR > 0) {    //玩家在左侧警戒位置
+			m_cmd = UP;
+			return;
+		}
+		if (DR < 0 && DR >= -BLUE_ALERT) {
+			m_cmd = DOWN;
+			return;
+		}
+	}
+	RedOne::MakeDecision(b); //不再追踪模式时的RED移动方向相同
 }
-
+void YellowOne::MakeDecision(bool b)
+{
+	const int DR = this->m_nRow - player->GetRow();
+	const int DA = this->m_nArray - player->GetArray();
+	if (!b) {
+		if (DR * DR > DA *DA) {
+			if (DA > 0) {
+				m_cmd = LEFT;
+				return;
+			}
+			else if (DA < 0) {
+				m_cmd = RIGHT;
+				return;
+			}
+		}
+		else {
+			if (DR > 0) {
+				m_cmd = UP;
+				return;
+			}
+			if (DR < 0) {
+				m_cmd = DOWN;
+				return;
+			}
+		}
+	}
+	RedOne::MakeDecision(b);                    //调用红色对象的函数，实现随机移动功能
+}
+void  YellowOne::Draw(HDC &hdc)
+{
+	Enermy::Draw(hdc);                          //绘制自身
+}
+//参数不再使用了 
 GObject::~GObject()
 {
 }
