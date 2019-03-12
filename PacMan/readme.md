@@ -43,3 +43,8 @@
 #author:YixiaoHan
 #fucntion:
 #time:16:57-
+
+#data:2019-3-12
+#author:YiyixiaoHan
+#function:finished the Game
+#ERRORS:
