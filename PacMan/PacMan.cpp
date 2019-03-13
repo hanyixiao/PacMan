@@ -48,7 +48,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PACMAN));
 	//当前的关卡
-	int s_n = 1; //[0,1,2]
+	int s_n = 0; //[0,1,2]
 	//地图
 	GMap *MapArray[STAGE_COUNT] = { new Stage_1(),new Stage_2(),new Stage_3() };
 	//自己
@@ -85,9 +85,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				GObject::pStage = MapArray[s_n];
 				RECT screenRect;
 				screenRect.top = 0;
-				screenRect.bottom = 0;
-				screenRect.left = WLENTH;
-				screenRect.right = WHIGHT;
+				screenRect.left = 0;
+				screenRect.right = WLENTH;
+				screenRect.bottom = WHIGHT;
 
 				HDC hdc = ::GetDC(g_hWnd);
 				std::shared_ptr<HDC__ >dc(hdc, [](HDC hdc) {

@@ -115,7 +115,7 @@ bool GObject::Collision()
 			}
 			break;
 		case RIGHT:
-			if (m_nArray > 0 && !pStage->mapData[m_nRow][m_nArray + 1]) {
+			if (m_nArray < MAPLENTH-1 && !pStage->mapData[m_nRow][m_nArray + 1]) {
 				b = true;
 				break;
 			}
@@ -123,8 +123,9 @@ bool GObject::Collision()
 			if (m_ptCenter.x > MAX) {
 				m_ptCenter.x = MIN;
 			}
+			break;
 		case UP:
-			if (m_nArray > 0 && !pStage->mapData[m_nRow-1][m_nArray]) {
+			if (m_nRow > 0 && !pStage->mapData[m_nRow-1][m_nArray]) {
 				b = true;
 				break;
 			}
@@ -134,7 +135,7 @@ bool GObject::Collision()
 			}
 			break;
 		case DOWN:
-			if (m_nArray > 0 && !pStage->mapData[m_nRow+1][m_nArray]) {
+			if (m_nRow <MAPLENTH-1 && !pStage->mapData[m_nRow+1][m_nArray]) {
 				b = true;
 				break;
 			}
@@ -206,7 +207,7 @@ void PacMan::Draw(HDC &memDC)
 		switch (m_dir) {
 		case UP:
 			x1 = m_ptCenter.x - offsetX;
-			x2 = m_ptCenter.y + offsetY;
+			x2 = m_ptCenter.x + offsetX;
 			y2 = y1 = m_ptCenter.y - offsetY;
 			break;
 		case DOWN:
@@ -365,9 +366,9 @@ void Enermy::Draw(HDC &hdc)
 				break;
 			case RIGHT:
 				Ellipse(hdc, m_ptCenter.x - R, m_ptCenter.y - R,
-					m_ptCenter.y + R, m_ptCenter.y + R);
-				Ellipse(hdc, m_ptCenter.x + R, m_ptCenter.y - R,
-					m_ptCenter.x + 3 * R, m_ptCenter.y + R);
+					m_ptCenter.x + R, m_ptCenter.y + R);
+				Ellipse(hdc, m_ptCenter.x +  R, m_ptCenter.y - R,
+					m_ptCenter.x +  3*R, m_ptCenter.y + R);
 				break;
 		}
 	m_nFrame++;

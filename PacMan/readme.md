@@ -48,3 +48,6 @@
 #author:YiyixiaoHan
 #function:finished the Game
 #ERRORS:
+
+#the key has a little delay and runs for a long time the game back ground has 
+#been blank
